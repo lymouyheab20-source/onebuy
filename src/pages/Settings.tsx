@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useStore } from '../store/store';
 import { useI18n } from '../i18n';
+import { useDialogs } from '../components/dialogs';
 import { uid } from '../lib/format';
 import { Card, downloadFile, Field, Modal, NameFields, NumberInput, PageHeader, Toast } from '../components/ui';
 import type { Brand, Category, Location } from '../types';
@@ -15,15 +16,16 @@ export function Settings() {
   const store = useStore();
   const { data, updateSettings, upsert, remove } = store;
   const { t, n, pct } = useI18n();
+  const { ask, notify } = useDialogs();
   const s = data.settings;
   const [editing, setEditing] = useState<Editing | null>(null);
   const [toast, setToast] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const del = (kind: Editing['kind'], id: string, name: string) => {
-    if (!confirm(t('confirmDelete', { name }))) return;
+  const del = async (kind: Editing['kind'], id: string, name: string) => {
+    if (!(await ask(t('confirmDelete', { name })))) return;
     const err = remove(kind, id);
-    if (err) alert(t(err as TKey));
+    if (err) notify(t(err as TKey));
   };
 
   const save = () => {
@@ -68,7 +70,7 @@ export function Settings() {
             <button className="btn" onClick={() => downloadFile(`onebuy-backup-${new Date().toISOString().slice(0, 10)}.json`, store.exportJson(), 'application/json')}>⇩ {t('exportData')}</button>
             <button className="btn" onClick={() => fileRef.current?.click()}>⇧ {t('importData')}</button>
             <input ref={fileRef} type="file" accept="application/json" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) onImport(f); e.target.value = ''; }} />
-            <button className="btn ghost danger" onClick={() => confirm(t('resetConfirm')) && store.resetDemo()}>{t('resetDemo')}</button>
+            <button className="btn ghost danger" onClick={async () => (await ask(t('resetConfirm'))) && store.resetDemo()}>{t('resetDemo')}</button>
           </div>
         </Card>
       </div>

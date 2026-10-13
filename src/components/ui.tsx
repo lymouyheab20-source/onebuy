@@ -182,7 +182,26 @@ export function Toast({ message, onDone }: { message: string; onDone: () => void
   return <div className="toast" role="status">{message}</div>;
 }
 
-export function downloadFile(name: string, content: string, type = 'text/plain') {
+type ClaudeHost = { use(name: 'downloads'): Promise<{ save(r: { filename: string; data: string }): Promise<unknown> } | null> };
+
+/**
+ * Save a generated file. Inside the claude.ai viewer, plain download links are blocked,
+ * so use its `downloads` capability there; everywhere else use a normal browser download.
+ */
+export async function downloadFile(name: string, content: string, type = 'text/plain') {
+  const host = (window as unknown as { claude?: ClaudeHost }).claude;
+  if (host?.use) {
+    try {
+      const downloads = await host.use('downloads');
+      if (downloads) {
+        await downloads.save({ filename: name, data: content });
+        return;
+      }
+    } catch {
+      // Declined or unavailable: nothing else to do inside the viewer.
+      return;
+    }
+  }
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

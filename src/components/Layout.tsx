@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { useI18n } from '../i18n';
 import { useStore } from '../store/store';
 import type { TKey } from '../i18n/en';
+import { useInstallPrompt } from '../pwa';
 
 // 24x24 stroke icon paths.
 const ICONS = {
@@ -40,6 +41,7 @@ export function Layout() {
   const { t, lang, dateTime } = useI18n();
   const [open, setOpen] = useState(false);
   const [pulse, setPulse] = useState(false);
+  const install = useInstallPrompt();
 
   useEffect(() => {
     setPulse(true);
@@ -75,6 +77,7 @@ export function Layout() {
             <span className="dot" /> {t('live')} · {t('updatedAt', { time: dateTime(lastChange) })}
           </div>
           <div className="topbar-right">
+            {install && <button className="btn sm primary" onClick={install}>⤓ {t('installApp')}</button>}
             <div className="seg" role="group" aria-label={t('currency')}>
               {(['USD', 'KHR'] as const).map((c) => (
                 <button key={c} className={data.settings.currency === c ? 'on' : ''} onClick={() => updateSettings({ currency: c })}>

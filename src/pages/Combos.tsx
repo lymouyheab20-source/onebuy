@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '../store/store';
 import { useI18n } from '../i18n';
+import { useDialogs } from '../components/dialogs';
 import { comboBreakdown, indexById, margin, portionsAvailable, productCost, suggestedPrice } from '../lib/costing';
 import { uid } from '../lib/format';
 import { Badge, Card, Field, FoodCostBadge, MoneyInput, NameFields, PageHeader, Toast } from '../components/ui';
@@ -10,6 +11,7 @@ import type { TKey } from '../i18n/en';
 export function Combos() {
   const { data, upsert, remove } = useStore();
   const { t, n, money, pct, num } = useI18n();
+  const { ask, notify } = useDialogs();
 
   const comboCat = data.categories.find((c) => c.id === 'c-combo')?.id ?? data.categories[0]?.id ?? '';
   const blank = (brandId = data.brands[0]?.id ?? ''): Combo => ({ id: uid('k-'), brandId, categoryId: comboCat, name: { en: '', km: '' }, price: 0, items: [], active: true });
@@ -56,10 +58,10 @@ export function Combos() {
     setToast(t('comboSaved'));
   };
 
-  const del = (c: Combo) => {
-    if (!confirm(t('confirmDelete', { name: n(c.name) }))) return;
+  const del = async (c: Combo) => {
+    if (!(await ask(t('confirmDelete', { name: n(c.name) })))) return;
     const err = remove('combos', c.id);
-    if (err) alert(t(err as TKey));
+    if (err) notify(t(err as TKey));
     if (c.id === draft.id) startNew(c.brandId);
   };
 

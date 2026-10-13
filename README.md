@@ -30,6 +30,23 @@ A web app for managing food costs and inventory across multiple restaurant brand
 
 All of this is in `src/lib/costing.ts` and covered by unit tests.
 
+## Using it as a web app
+
+OneBuy is an installable web app (PWA):
+- **Open it in any browser** on a computer, tablet or phone. No app store is needed.
+- **Install it.** In Chrome or Edge, click **Install app** in the top bar. On Android, use **Add to Home screen**. On iPhone, open it in Safari, then **Share → Add to Home Screen**. It opens full-screen with its own icon.
+- **Works offline.** After the first visit, the app loads without internet. Changes are saved on the device.
+
+### Put it online (GitHub Pages, free)
+1. Merge this branch into `main`.
+2. On GitHub, go to **Settings → Pages → Build and deployment** and set **Source** to **GitHub Actions**.
+3. Each push to `main` runs `.github/workflows/deploy.yml`, which tests, builds and publishes the site to `https://<user>.github.io/onebuy/`.
+
+The `dist/` folder from `npm run build` also works on any static host (Netlify, Vercel, Cloudflare Pages, or your own server). It uses relative paths and hash routing, so you don't need any server configuration.
+
+### One-file version
+`npm run build:single` also writes `dist/onebuy-single.html`, which has everything in one file. Open it straight from disk or share it. Install and offline mode are only available in the hosted version.
+
 ## Getting started
 
 ```bash

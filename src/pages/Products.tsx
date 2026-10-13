@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '../store/store';
 import { useI18n } from '../i18n';
+import { useDialogs } from '../components/dialogs';
 import { compatibleUnits, indexById, margin, portionsAvailable, productCost, productUsage, recipeLineCost, suggestedPrice } from '../lib/costing';
 import { uid } from '../lib/format';
 import { Badge, Card, Field, FilterBar, FoodCostBadge, Modal, MoneyInput, NameFields, NumberInput, PageHeader } from '../components/ui';
@@ -11,6 +12,7 @@ import type { TKey } from '../i18n/en';
 export function Products() {
   const { data, upsert, remove } = useStore();
   const { t, n, money, num } = useI18n();
+  const { ask, notify } = useDialogs();
   const [filters, setFilters] = useState<Filters>({ ...DEFAULT_FILTERS });
   const [q, setQ] = useState('');
   const [edit, setEdit] = useState<Product | null>(null);
@@ -48,10 +50,10 @@ export function Products() {
     setEdit(null);
   };
 
-  const del = (p: Product) => {
-    if (!confirm(t('confirmDelete', { name: n(p.name) }))) return;
+  const del = async (p: Product) => {
+    if (!(await ask(t('confirmDelete', { name: n(p.name) })))) return;
     const err = remove('products', p.id);
-    if (err) alert(t(err as TKey));
+    if (err) notify(t(err as TKey));
   };
 
   return (

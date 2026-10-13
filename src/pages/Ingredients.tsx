@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '../store/store';
 import { useI18n } from '../i18n';
+import { useDialogs } from '../components/dialogs';
 import { effectiveUnitCost } from '../lib/costing';
 import { uid } from '../lib/format';
 import { Card, Field, Modal, MoneyInput, NameFields, NumberInput, PageHeader } from '../components/ui';
@@ -14,6 +15,7 @@ const blank = (): Ingredient => ({ id: uid('i-'), name: { en: '', km: '' }, unit
 export function Ingredients() {
   const { data, upsert, remove } = useStore();
   const { t, n, money, pct, num } = useI18n();
+  const { ask, notify } = useDialogs();
   const [q, setQ] = useState('');
   const [edit, setEdit] = useState<Ingredient | null>(null);
   const [error, setError] = useState('');
@@ -32,10 +34,10 @@ export function Ingredients() {
     setEdit(null);
   };
 
-  const del = (ing: Ingredient) => {
-    if (!confirm(t('confirmDelete', { name: n(ing.name) }))) return;
+  const del = async (ing: Ingredient) => {
+    if (!(await ask(t('confirmDelete', { name: n(ing.name) })))) return;
     const err = remove('ingredients', ing.id);
-    if (err) alert(t(err as TKey));
+    if (err) notify(t(err as TKey));
   };
 
   return (
